@@ -14,8 +14,8 @@
 
 provider "aws" {
   region     = "us-east-1"
-  access_key = "AKIARMEROPMAZGTTDKPB"
-  secret_key = "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"
+  access_key = "xxxxxxx"
+  secret_key = "xxxxxxx"
 }
 
 ### network.tf
