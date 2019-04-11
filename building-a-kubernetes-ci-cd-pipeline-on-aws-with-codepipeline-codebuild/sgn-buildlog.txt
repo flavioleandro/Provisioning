@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+export AWS_DEFAULT_OUTPUT=json
+
+# trap ctrl-c and call ctrl_c()
+trap ctrl_c INT
+
+function ctrl_c() {
+    echo "** Exit CTRL-C"
+    exit 0
+}
+
+IFS=':' read -r -a IN <<<"${1}"
+PROJECT_NAME=${IN[0]:-"xDEF"}
+STREAM_NAME=${IN[1]:-"xDEF"}
+
+function getHelp() {
+    echo "Usage: $(basename ${0}) <projectName>:<buildID> <opts>"
+    echo
+    echo "Get the build log for specified project and buildID"
+    echo 
+    echo "-f to follow the buildlog, refreshes every 1 sec"
+    exit 0
+}
+
+if [ "$(tr '[:upper:]' '[:lower:]' <<<${PROJECT_NAME})" == "help" ]; then
+    getHelp
+fi
+
+if [ "$(tr '[:upper:]' '[:lower:]' <<<${PROJECT_NAME})" == "-h" ]; then
+    getHelp
+fi
+
+if [ "${PROJECT_NAME}" == "xDEF" ] || [ "${STREAM_NAME}" == "xDEF" ]; then
+    getHelp
+fi
+
+if [ ! "${PROJECT_NAME}" == "xDEF" ] && [ ! "${STREAM_NAME}" == "xDEF" ]; then
+    END_TIME=$(($(date +"%s") * 1000))
+    aws logs get-log-events --log-group-name "/aws/codebuild/${PROJECT_NAME}" --log-stream-name "${STREAM_NAME}" --end-time $END_TIME | jq -r '.events | .[] | "[\(.timestamp / 1000 | strftime("%Y/%m/%d %H:%M%:%S"))] \(.message)"' | grep -v '^$'
+    if [ "${2}" == "-f" ]; then
+        while :; do
+            start_time=${END_TIME}
+            END_TIME=$(($(date +"%s") * 1000))
+            aws logs get-log-events --log-group-name "/aws/codebuild/${PROJECT_NAME}" --log-stream-name "${STREAM_NAME}" --start-time $start_time --end-time $END_TIME | jq -r '.events | .[] | "[\(.timestamp / 1000 | strftime("%Y/%m/%d %H:%M%:%S"))] \(.message)"' | grep -v '^$'
+            sleep 1
+        done
+    fi
+fi

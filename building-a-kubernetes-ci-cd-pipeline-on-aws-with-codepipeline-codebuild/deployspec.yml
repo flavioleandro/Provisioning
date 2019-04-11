@@ -1,0 +1,16 @@
+namespace: hello-world
+envsecret: True
+spec:
+  deploy:
+  - deploy/deploy.yml
+  service:
+  - deploy/service.yml
+  ingress:
+  - deploy/ingress.yml
+  configmap:
+  - deploy/cm.yml
+templating:
+  staging.domain.com:
+    service_domain: service-staging.domain.com
+  production.domain.com:
+    service_domain: service.domain.com

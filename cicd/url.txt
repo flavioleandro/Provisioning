@@ -1,0 +1,1 @@
+https://churrops.io/2018/06/05/terraform-ecs-codepipeline-realizando-deploy-de-containers-na-aws-com-ci-cd/
